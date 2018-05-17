@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="" xmlns="">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Django Rest framework +Vue</title>
+    {% load static %}
+    <script type="text/javascript" src="{% static "axios.min.js" %}"></script>
+    <script src="{% static "vue.js" %}"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script type="text/javascript" src="{% static "index.js" %}"></script>
+</head>
+
+<body>
+
+<div id ="todolist">
+    <p>list of todo</p> <el-button @click="dialogFormVisible=true" type="primary">添加待办</el-button>
+          <el-table
+                  :data="todolists"
+                  border
+                  style="width: 100%">
+              <el-table-column
+                      fixed
+                      prop="todo_id"
+                      label="序号"
+                      width="80">
+              </el-table-column>
+              <el-table-column
+                      prop="todo_title"
+                      label="标题"
+                      width="150">
+              </el-table-column>
+              <el-table-column
+                      prop="todo_content"
+                      label="内容"
+                      width="180">
+              </el-table-column>
+              <el-table-column
+                      prop="todo_finish_date"
+                      label="待办时间"
+              >
+              </el-table-column>
+              <el-table-column
+                      fixed="right"
+                      label="操作"
+                      width="100">
+                  <template slot-scope="scope">
+                      <el-button @click="getTodolist(scope.row.todo_id)" type="text" size="small">编辑</el-button>
+                      <el-button type="text" size="small">删除</el-button>
+                  </template>
+              </el-table-column>
+          </el-table>
+
+<el-dialog title="编辑todo" :visible.sync="editdialogFormVisible">
+  <el-form :model="currentTodolist">
+    <el-form-item label="todo标题" :label-width="formLabelWidth">
+      <el-input v-model="currentTodolist.todo_title" auto-complete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="todo内容" :label-width="formLabelWidth">
+        <el-input v-model="currentTodolist.todo_content"></el-input>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="editdialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="updateTodolist()">确 定</el-button>
+  </div>
+</el-dialog>
+    <el-dialog title="新增todo" :visible.sync="dialogFormVisible">
+  <el-form :model="newTodolist">
+    <el-form-item label="todo标题" :label-width="formLabelWidth">
+      <el-input v-model="newTodolist.todo_title" auto-complete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="todo内容" :label-width="formLabelWidth">
+        <el-input v-model="newTodolist.todo_content"></el-input>
+    </el-form-item>
+      <div class="block">
+          <span class="demonstration">设置默认时间</span>
+          <el-date-picker
+                  v-model="newTodolist.todo_finish_date"
+                  type="datetime"
+                  placeholder="选择日期时间"
+                  default-time="12:00:00">
+          </el-date-picker>
+      </div>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="dialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="addTodolist()">确 定</el-button>
+  </div>
+</el-dialog>
+</div>
+
+    <script type="text/javascript">
+        var todolist = new Vue({
+            el: '#todolist',
+            delimiters: ['${', '}'],
+            data: {
+                todolists: [],
+                dialogFormVisible: false,
+                editdialogFormVisible: false,
+                loading: false,
+                currentTodolist: {},
+                message: null,
+                newTodolist: {
+                    'todo_title': null, 'todo_content': null, 'todo_finish_date': null,
+                    'finish_flag': 0
+                },
+                formLabelWidth: '120px'
+            },
+            mounted: function () {
+                this.getTodolists();
+            },
+            methods: {
+                getTodolists: function () {
+                    axios.get('api/todolist/').then((resp) => {
+                        this.todolists = resp.data;
+                        this.loading = false;
+                    })
+                        .catch((error) => {
+                            this.loading = false;
+                            console.log(error);
+                        })
+
+                },
+                getTodolist: function (id) {
+                    this.editdialogFormVisible = true;
+                    axios.get('api/todolist/'+id).then((resp) => {
+                         console.log(resp.data);
+                        this.currentTodolist = resp.data;
+
+                        this.loading = false;
+                    })
+                        .catch((error) => {
+                            this.loading = false;
+                            console.log(error);
+                        })
+
+                },
+                 addTodolist: function () {
+                    this.dialogFormVisible = true;
+                    axios.post('api/todolist/',this.newTodolist).then((resp) => {
+                         console.log(resp.data);
+                        this.currentTodolist = resp.data;
+
+                        this.loading = false;
+                    })
+                        .catch((error) => {
+                            this.loading = false;
+                            console.log(error);
+                        })
+
+                },
+                updateTodolist: function () {
+                    this.editdialogFormVisible = false;
+                    axios.put('api/todolist/' + this.currentTodolist.todo_id + '/', this.currentTodolist)
+                        .then((response) => {
+                            this.loading = false;
+                            this.currentTodolist = response.data;
+                            this.getTodolists();
+                        })
+                        .catch((error) => {
+                            this.loading = false;
+                            console.log(error);
+                        })
+
+                },
+                delTodolist: function (id) {
+                    this.loading = true;
+                    axios.delete('api/todolist/' + id)
+                        .then((response) => {
+                            this.loading = false;
+                            this.getTodolists();
+                        })
+                        .catch((error) => {
+                            this.loading = false;
+                            console.log(error);
+                        })
+
+                }
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
