@@ -19,35 +19,37 @@
           <el-table
                   :data="todolists"
                   border
-                  style="width: 100%">
+                  style="width: 80%">
               <el-table-column
                       fixed
                       prop="todo_id"
                       label="序号"
-                      width="80">
+                      width="50%">
               </el-table-column>
               <el-table-column
                       prop="todo_title"
                       label="标题"
-                      width="150">
+                      width="100%">
               </el-table-column>
               <el-table-column
                       prop="todo_content"
                       label="内容"
-                      width="180">
+                      width="380">
               </el-table-column>
               <el-table-column
                       prop="todo_finish_date"
                       label="待办时间"
+                      width="180"
               >
               </el-table-column>
               <el-table-column
                       fixed="right"
                       label="操作"
-                      width="100">
+
+              >
                   <template slot-scope="scope">
-                      <el-button @click="getTodolist(scope.row.todo_id)" type="text" size="small">编辑</el-button>
-                      <el-button type="text" size="small">删除</el-button>
+                      <el-button @click="getTodolist(scope.row.todo_id)" type="primary" icon="el-icon-edit" size="small"></el-button>
+                      <el-button @click="delTodolist(scope.row.todo_id)" type="danger" icon="el-icon-delete" size="small"></el-button>
                   </template>
               </el-table-column>
           </el-table>
@@ -74,15 +76,14 @@
     <el-form-item label="todo内容" :label-width="formLabelWidth">
         <el-input v-model="newTodolist.todo_content"></el-input>
     </el-form-item>
-      <div class="block">
-          <span class="demonstration">设置默认时间</span>
-          <el-date-picker
-                  v-model="newTodolist.todo_finish_date"
-                  type="datetime"
-                  placeholder="选择日期时间"
-                  default-time="12:00:00">
-          </el-date-picker>
-      </div>
+       <el-form-item label="完成时间" :label-width="formLabelWidth">
+               <el-date-picker
+                      v-model="newTodolist.todo_finish_date"
+                      type="datetime"
+                      placeholder="选择日期时间"
+                      default-time="12:00:00">
+              </el-date-picker>
+    </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
     <el-button @click="dialogFormVisible = false">取 消</el-button>
@@ -138,12 +139,10 @@
 
                 },
                  addTodolist: function () {
-                    this.dialogFormVisible = true;
-                    axios.post('api/todolist/',this.newTodolist).then((resp) => {
-                         console.log(resp.data);
-                        this.currentTodolist = resp.data;
+                    this.dialogFormVisible = false;
+                    axios.post('api/todolist/',this.currentTodolist).then((resp) => {
+                        this.getTodolists();
 
-                        this.loading = false;
                     })
                         .catch((error) => {
                             this.loading = false;
