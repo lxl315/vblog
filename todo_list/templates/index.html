@@ -6,55 +6,18 @@
     <title>Django Rest framework +Vue</title>
     {% load static %}
     <script type="text/javascript" src="{% static "axios.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "moment.js" %}"></script>
     <script src="{% static "vue.js" %}"></script>
     <!-- 引入样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+{#    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">#}
+    <link rel="stylesheet" href="{% static "index.css" %}">
     <script type="text/javascript" src="{% static "index.js" %}"></script>
 </head>
 
-<body>
+
 
 <div id ="todolist">
-    <p>list of todo</p> <el-button @click="dialogFormVisible=true" type="primary">添加待办</el-button>
-          <el-table
-                  :data="todolists"
-                  border
-                  style="width: 80%">
-              <el-table-column
-                      fixed
-                      prop="todo_id"
-                      label="序号"
-                      width="50%">
-              </el-table-column>
-              <el-table-column
-                      prop="todo_title"
-                      label="标题"
-                      width="100%">
-              </el-table-column>
-              <el-table-column
-                      prop="todo_content"
-                      label="内容"
-                      width="380">
-              </el-table-column>
-              <el-table-column
-                      prop="todo_finish_date"
-                      label="待办时间"
-                      width="180"
-              >
-              </el-table-column>
-              <el-table-column
-                      fixed="right"
-                      label="操作"
-
-              >
-                  <template slot-scope="scope">
-                      <el-button @click="getTodolist(scope.row.todo_id)" type="primary" icon="el-icon-edit" size="small"></el-button>
-                      <el-button @click="delTodolist(scope.row.todo_id)" type="danger" icon="el-icon-delete" size="small"></el-button>
-                  </template>
-              </el-table-column>
-          </el-table>
-
-<el-dialog title="编辑todo" :visible.sync="editdialogFormVisible">
+    <el-dialog title="编辑todo" :visible.sync="editdialogFormVisible">
   <el-form :model="currentTodolist">
     <el-form-item label="todo标题" :label-width="formLabelWidth">
       <el-input v-model="currentTodolist.todo_title" auto-complete="off"></el-input>
@@ -68,7 +31,7 @@
     <el-button type="primary" @click="updateTodolist()">确 定</el-button>
   </div>
 </el-dialog>
-    <el-dialog title="新增todo" :visible.sync="dialogFormVisible">
+<el-dialog title="新增todo" :visible.sync="dialogFormVisible">
   <el-form :model="newTodolist">
     <el-form-item label="todo标题" :label-width="formLabelWidth">
       <el-input v-model="newTodolist.todo_title" auto-complete="off"></el-input>
@@ -90,19 +53,159 @@
     <el-button type="primary" @click="addTodolist()">确 定</el-button>
   </div>
 </el-dialog>
-</div>
+    <el-container>
+        <el-header>  <p>ToDoList</p></el-header>
+        <el-container>
+            <el-aside>
+                todo 分类
+            </el-aside>
+            <el-main>
+                  <div class="search"><el-form :inline="true" >
+                            <el-form-item>
+                                <el-input v-model="search_item" style="width: 290px" size="medium"
+                                          suffix-icon="el-icon-search"
+                                          placeholder="内容、标题"></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="getTodolists()">搜索</el-button>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button style="margin-left: 100px" @click="dialogFormVisible=true" type="info"
+                                   icon="el-icon-plus">添加
+                             </el-button>
+                            </el-form-item>
+                        </el-form>
+                  </div>
 
+                             <el-table
+                                :data="todolists"
+                                border
+                                height="350"
+                                style="width: 100%;text-align: left"
+                        >
+
+                            <el-table-column
+                                    prop="todo_title"
+                                    label="标题"
+                                    width="100%">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="todo_content"
+                                    label="内容"
+                                    width="380">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="todo_finish_date"
+                                    label="待办时间"
+                                    width="180"
+                                    :formatter="dateFormat"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    fixed="right"
+                                    label="操作"
+
+                            >
+                                <template slot-scope="scope">
+                                    <el-button @click="updatefinishflag(scope.row.todo_id)" type="success"
+                                               icon="el-icon-check" size="small"></el-button>
+                                    <el-button @click="getTodolist(scope.row.todo_id)" type="primary"
+                                               icon="el-icon-edit" size="small"></el-button>
+                                    <el-button @click="delTodolist(scope.row.todo_id)" type="danger"
+                                               icon="el-icon-delete" size="small"></el-button>
+
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                        <div style="text-align: center;height: 40px;margin-top: 20px">
+                            <el-pagination
+
+                                    background
+                                    @size-change="handleSizeChange"
+                                    @current-change="handleCurrentChange"
+                                    :current-page="1"
+                                    :page-sizes="[5, 10, 20, 50]"
+                                    :page-size="10"
+                                    layout="total,sizes,prev, pager, next"
+                                    :total="count">
+                            </el-pagination>
+                        </div>
+
+
+            </el-main>
+        </el-container>
+        <el-footer>Django Rest FrameWork +Vue.js + Element-ui ©2018-05  by Li</el-footer>
+    </el-container>
+
+
+  </div>
+<style>
+
+p{
+    font-family: Verdana, "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+    font-size: 26px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 255);
+    margin: 0px 350px;
+}
+     .el-header, .el-footer {
+          background-color: #228fd1;
+          color: #333;
+          text-align: center;
+          line-height: 60px;
+        }
+     .el-footer {
+          background-color: #eeeaff;
+          color: #333;
+         font-family: "Source Code Pro ";
+          text-align: center;
+          line-height: 60px;
+        }
+
+        .el-aside {
+          background-color: #D3DCE6;
+          color: #333;
+          text-align: center;
+          line-height: 200px;
+        }
+
+        .el-main {
+          background-color: white;
+          color: rgb(223, 28, 28);
+          text-align: center;
+            height: auto;
+
+        }
+
+        body > .el-container {
+          margin-bottom: 40px;
+        }
+
+        .el-container:nth-child(5) .el-aside,
+        .el-container:nth-child(6) .el-aside {
+          line-height: 260px;
+        }
+
+        .el-container:nth-child(7) .el-aside {
+          line-height: 320px;
+        }
+
+</style>
     <script type="text/javascript">
         var todolist = new Vue({
             el: '#todolist',
             delimiters: ['${', '}'],
             data: {
                 todolists: [],
+                count:0,
+                currentPage:'',
+                size:10,
                 dialogFormVisible: false,
                 editdialogFormVisible: false,
                 loading: false,
                 currentTodolist: {},
                 message: null,
+                search_item:"",
                 newTodolist: {
                     'todo_title': null, 'todo_content': null, 'todo_finish_date': null,
                     'finish_flag': 0
@@ -113,10 +216,19 @@
                 this.getTodolists();
             },
             methods: {
-                getTodolists: function () {
-                    axios.get('api/todolist/').then((resp) => {
-                        this.todolists = resp.data;
-                        this.loading = false;
+                dateFormat: function (row, column) {
+                    var date = row[column.property];
+                    if (date == undefined) {
+                        return "";
+                    }
+                    return moment(date).format("YYYY-MM-DD HH:mm:ss");
+                },
+                handleSizeChange(val){
+                   this.size =val;
+                    axios.get(`api/todolist/?limit=${val}`).then((resp) => {
+                        this.todolists = resp.data.results;
+
+
                     })
                         .catch((error) => {
                             this.loading = false;
@@ -124,9 +236,51 @@
                         })
 
                 },
+                handleCurrentChange(val){
+                      axios.get(`api/todolist/?limit=${this.size}&offset=`+this.size*(val-1)).then((resp) => {
+                        this.todolists = resp.data.results;
+
+
+                    })
+                        .catch((error) => {
+                            this.loading = false;
+                            console.log(error);
+                        })
+
+                },
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+{#                tableRowClassName({row, rowIndex}) {#}
+{#                    if(row.finish_flag==='0'){#}
+{#                         return 'warning-row';#}
+{#                    }#}
+{#                    else if (row.finish_flag==='1') {#}
+{#                        return 'success-row';#}
+{#                    }#}
+{#                    return '';#}
+{#                },#}
+                getTodolists: function () {
+                    let api_url ='api/todolist/';
+                    if (this.search_item !=="" || this.search_item !== null){
+                        api_url =`/api/todolist/?search=${this.search_item}`
+                    }
+                    axios.get(api_url).then((resp) => {
+                        this.todolists = resp.data.results;
+                        this.count=resp.data.count;
+                        this.size = resp.data.count;
+
+                    })
+                        .catch((error) => {
+                            this.loading = false;
+                            console.log(error);
+                        })
+
+                },
+
                 getTodolist: function (id) {
                     this.editdialogFormVisible = true;
-                    axios.get('api/todolist/'+id).then((resp) => {
+                    axios.get(`api/todolist/${id}`).then((resp) => {
                          console.log(resp.data);
                         this.currentTodolist = resp.data;
 
@@ -140,7 +294,7 @@
                 },
                  addTodolist: function () {
                     this.dialogFormVisible = false;
-                    axios.post('api/todolist/',this.currentTodolist).then((resp) => {
+                    axios.post('api/todolist/',this.newTodolist).then((resp) => {
                         this.getTodolists();
 
                     })
@@ -164,11 +318,28 @@
                         })
 
                 },
-                delTodolist: function (id) {
-                    this.loading = true;
-                    axios.delete('api/todolist/' + id)
+                updatefinishflag: function (id) {
+                    axios.patch(`api/todolist/${id}/`, {"finish_flag":"1","todo_title":"patch"})
                         .then((response) => {
                             this.loading = false;
+                            this.currentTodolist = response.data;
+                            this.getTodolists();
+                        })
+                        .catch((error) => {
+                            this.loading = false;
+                            console.log(error);
+                        })
+
+                },
+                delTodolist: function (id) {
+                    this.loading = true;
+                    axios.delete(`api/todolist/${id}`)
+                        .then((response) => {
+                            this.$notify({
+                                title: '删除成功',
+                                message: '',
+                                type: 'success'
+                            });
                             this.getTodolists();
                         })
                         .catch((error) => {
